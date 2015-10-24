@@ -1,0 +1,39 @@
+.main {
+	text-align: center;
+	padding: 0 15px;
+	margin-top: 15px;
+}
+
+.board {
+	display: inline-block;
+	width: 368px;
+	border: 1px solid #555;
+}
+
+.block {
+	width: 122px;
+	float: left;
+	border: 1px solid #555;
+}
+
+.cell {
+	height: 40px;
+	width: 40px;
+	padding: 4px;
+	float: left;
+	border: 1px solid #555;
+	font-size: 20px;
+	color: #000;
+}
+
+.answer {
+	width: 30px;
+	height: 30px;
+	text-align: center;
+	border: none;
+}
+
+.given {
+	font-weight: bold;
+	color: #555;
+}
