@@ -1,3 +1,5 @@
+/* Hard-coded puzzles for testing */
+
 testPuzzleEasy = [
   [5,9,0,  0,0,2,  0,7,0], // 1-1, 1-2, 1-3, 1-4, 1-5, 1-6, 1-7, 1-8, 1-9
   [8,4,0,  0,6,5,  9,0,0], // 2-1, 2-2, 2-3, 2-4, 2-5, 2-6, 2-7, 2-8, 2-9
@@ -40,11 +42,37 @@ testPuzzleHard = [
   [8,0,0,  5,0,0,  0,0,6]
 ];
 
+/** Upon document ready
+  * - initialize listeners
+  * - call main
+  */
 $( function() {
-  initBoard();
-  loadPuzzle(testPuzzleHard);
+  main();
 });
 
+/* Initialize our board */
+function main() {
+  initBoard();
+  loadPuzzle(testPuzzleHard);
+}
+
+/** Initialize a blank board.
+  *
+  * We have 9 blocks, which represent the 9 big squares on a
+  * sudoku board.
+  *
+  * Each block has 9 cells, which represent the smaller squares
+  * on a sudoku board.
+  *
+  * The numbering for both is as follows:
+  * .-----------.
+  * | 1 | 2 | 3 |
+  * |---.---.---|
+  * | 4 | 5 | 6 |
+  * |---.---.---|
+  * | 7 | 8 | 9 |
+  * .-----------.
+  */
 function initBoard() {
   var $board = $('#board');
   for (var i = 0; i < 9; i++) {
@@ -61,6 +89,15 @@ function initBoard() {
   }
 }
 
+/** Load a puzzle given an 2-D array.
+  *
+  * "Null" values are represented by a 0 in the array. These cells
+  * are given the class "editable".
+  * Each cell with a given value has the class "given".
+  *
+  * @param puzzle - our 2D array, where puzzle[r][c] gives us the
+  * cell at a particular row and column. 0 < r,c < 9.
+  */
 function loadPuzzle(puzzle) {
   for (var r = 0; r < 9; r++) {
     for (var c = 0; c < 9; c++) {
@@ -68,7 +105,7 @@ function loadPuzzle(puzzle) {
       if (cur !== 0) {
         $('#cell-'+ (r+1) + '-' + (c+1)).text(cur).addClass('given');
       } else {
-        $('#cell-'+ (r+1) + '-' + (c+1)).append('<input type="text" class="answer"/>');
+        $('#cell-'+ (r+1) + '-' + (c+1)).addClass('editable');
       }
     }
   }
