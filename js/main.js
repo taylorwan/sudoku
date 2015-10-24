@@ -1,3 +1,7 @@
+/**************************
+  TEST VALUES
+**************************/
+
 /* Hard-coded puzzles for testing */
 
 testPuzzleEasy = [
@@ -42,6 +46,20 @@ testPuzzleHard = [
   [8,0,0,  5,0,0,  0,0,6]
 ];
 
+
+
+/**************************
+  
+  MAIN FUNCTION
+  
+  ************************
+
+  Functions:
+  - document.ready
+  - main
+
+**************************/
+
 /** Upon document ready
   * - initialize listeners
   * - call main
@@ -50,11 +68,28 @@ $( function() {
   main();
 });
 
+
 /* Initialize our board */
 function main() {
   initBoard();
   loadPuzzle(testPuzzleHard);
 }
+
+
+
+
+/**************************
+
+  BOARD
+
+  ************************
+
+  Functions:
+  - initBoard
+  - loadPuzzle
+
+**************************/
+
 
 /** Initialize a blank board.
   *
@@ -81,13 +116,14 @@ function initBoard() {
     for (var j = 0; j < 9; j++) {
       var r = parseInt(i/3)*3 + parseInt(j/3) + 1;
       var c = parseInt(i%3)*3 + parseInt(j%3) + 1;
-      $block += '<div id="cell-' + r + '-' + c + '" class="cell"></div>';
+      $block += '<div id="cell-' + r + '-' + c + '" class="cell" row="' + r + '" col="' + c + '"></div>';
     }
 
     $block += '</div>';
     $board.append($block);
   }
 }
+
 
 /** Load a puzzle given an 2-D array.
   *
@@ -109,4 +145,188 @@ function loadPuzzle(puzzle) {
       }
     }
   }
+}
+
+
+
+
+/**************************
+
+  VALIDATION
+
+  ************************
+
+  Functions:
+  - boardIsValid
+  - rowIsValid
+  - colIsValid
+  - blockIsValid
+
+  Helpers:
+  - valueInArray
+  - falseArray
+
+**************************/
+
+/** Check if current board is valid
+  * - check each row
+  * - check each column
+  * - check each block
+  * @return true if all checks pass, false otherwise.
+  */
+function boardIsValid() {
+  for (var i = 0; i < 9; i++) {
+    if (!rowIsValid(i)) {
+      return false;
+    } if (!colIsValid(i)) {
+      return false;
+    } if (!blockIsValid(i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+/** Given a particular row, check if it is valid
+  * @param r - row to check
+  * @return true if all checks pass, false otherwise.
+  */
+function rowIsValid(r) {
+  arr = falseArray();
+  for (var c = 0; c < 9; c++) {
+    if (valueInArray($('#cell-' + r + '-' + c), arr)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+/** Given a particular column, check if it is valid
+  * @param c - column to check
+  * @return true if all checks pass, false otherwise.
+  */
+function colIsValid(c) {
+  arr = falseArray();
+  for (var r = 0; r < 9; r++) {
+    if (valueInArray($('#cell-' + r + '-' + c), arr)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+/** Given a particular board, check if it is valid
+  * @param b - board to check
+  * @return true if all checks pass, false otherwise.
+  */
+function blockIsValid(b) {
+  arr = falseArray();
+  var $block = $('#block-' + b);
+  $block.find('cell').each(function() {
+    if (valueInArray($(this), arr)) {
+      return false;
+    }
+  });
+  return true;
+}
+
+
+/** Check if our current value is marked true in our array.
+  * Used for validating rows, columns, and blocks.
+  * 
+  * If our value is in the array, return true.
+  * Otherwise, mark the current value to be in the array and
+  * return false.
+  * 
+  * @param cur - current value
+  * @param arr - array
+  * @return true if our value is in the array, false otherwise.
+  */
+function valueInArray($cell, arr) {
+  var cur = parseInt($cell.text()) - 1;
+  if (!arr[cur]) {
+    arr[cur] = true;
+    return false;
+  }
+  return true;
+}
+
+
+/** Generate array with 9 values, all false.
+  * Used for validating rows, columns, and blocks.
+  */
+function falseArray() {
+  fArr = [];
+  for (var i = 0; i < 9; i++) {
+    fArr[i] = false;
+  }
+  return fArr;
+}
+
+
+
+
+/**************************
+  
+  HIGHLIGHTING
+
+  ************************
+
+  Functions:
+  - highlightRow
+  - highlightCol
+  - highlightBlock
+
+  Helpers:
+  - lowlight
+  - highlight
+
+**************************/
+
+/** Highlight a particular row
+  * @param r - row to highlight
+  * @return true if all checks pass, false otherwise.
+  */
+function highlightRow(r) {
+  for (var c = 0; c < 9; c++) {
+    lowlight($('#cell-' + r + '-' + c));
+  }
+}
+
+/** Highlight a particular column
+  * @param c - column to highlight
+  * @return true if all checks pass, false otherwise.
+  */
+function highlightCol(c) {
+  for (var r = 0; r < 9; r++) {
+    lowlight($('#cell-' + r + '-' + c));
+  }
+}
+
+/** Highlight a particular block
+  * @param b - block to highlight
+  * @return true if all checks pass, false otherwise.
+  */
+function highlightBlock(b) {
+  var $block = $('#block-' + b);
+  $block.find('cell').each(function() {
+    lowlight($(this));
+  });
+}
+
+/** Lowlight a cell
+  * @param $cell - block to lowlight
+  */
+function lowlight($cell) {
+  $cell.addClass('lowlight');
+}
+
+/** Highlight the current cell
+  * Used to highlight the current cell
+  */
+function highlightCurrent() {
+  $('.currentCell').addClass('highlight');
 }
