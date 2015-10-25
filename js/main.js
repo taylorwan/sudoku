@@ -179,7 +179,6 @@ function getCell(r, c) {
 function clickedCell() {
   moveCell($(this));
   update();
-  boardIsValid();
 }
 
 
@@ -248,7 +247,6 @@ function editCell(e) {
     // non-pencil mode
     else {
       $c.text(val);
-      boardIsValid();
     }
   }
 
@@ -285,10 +283,12 @@ function moveCell($c) {
 /** Update the current board
   * - highlights
   * - possible values
+  * Check for board validity.
   */
 function update() {
   updateHighlights();
   updatePossibleValues();
+  boardIsValid();
 }
 
 
