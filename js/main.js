@@ -199,7 +199,9 @@ function editCell(e) {
 
   if (code === 8) { // backspace
     e.preventDefault();
-    $c.html('<div class="pencil"></div>');
+    if ($c.hasClass('editable')) {
+      $c.html('<div class="pencil"></div>');
+    }
   }  else if (code == 80) { // "p": toggle-pencil
     togglePencil();
   } else if (code === 37) { // left
