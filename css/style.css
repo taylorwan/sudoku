@@ -31,29 +31,27 @@
 	cursor: pointer;
 }
 
-.answer {
-	width: 30px;
-	height: 30px;
-	text-align: center;
-	border: none;
-}
-
-.given {
+.cell.given {
 	font-weight: bold;
 	color: #333;
 }
 
-.lowlight {
+.cell.lowlight {
 	background: #bce8f1;
 	-webkit-transition: all .05s linear;
 }
 
-.lowlight.red {
-	background: #ea5c5a;
+.cell.green {
+	background: #c7e4af;
 	-webkit-transition: all .05s linear;
 }
 
-.current-cell {
+.cell.current-cell {
 	background: #5ea6e4;
+	-webkit-transition: all .05s linear;
+}
+
+.cell.red {
+	background: #ea5c5a;
 	-webkit-transition: all .05s linear;
 }

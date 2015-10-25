@@ -18,11 +18,12 @@ $( function() {
   main();
 
   $('.cell').click(clickedCell);
-  $(document).on("keypress", editCell);
+  $(document).on("keydown", editCell);
 });
 
 
-/* Initialize our board */
+/** Initialize our board
+  */
 function main() {
   initBoard();
   loadPuzzle(testPuzzleHard);
@@ -70,13 +71,13 @@ function initBoard() {
   var $board = $('#board');
   for (var i = 0; i < 9; i++) { // blocks
 
-    var b = i+1; // block #
+    var b = i; // block #
     var blockHTML = '<div id="block-' + b + '" class="block">';
 
     for (var j = 0; j < 9; j++) { // cells for each block
 
-      var r = parseInt(i/3)*3 + parseInt(j/3) + 1; // row #
-      var c = parseInt(i%3)*3 + parseInt(j%3) + 1; // col #
+      var r = parseInt(i/3)*3 + parseInt(j/3); // row #
+      var c = parseInt(i%3)*3 + parseInt(j%3); // col #
 
       blockHTML += '<div id="cell-' + r + '-' + c + '"';
       blockHTML += ' class="cell" row="' + r + '"';
@@ -97,7 +98,7 @@ function initBoard() {
   * Each cell with a given value has the class "given".
   *
   * @param puzzle - our 2D array, where puzzle[r][c] gives us
-  * the cell at a particular row and column. r,c in [0,9).
+  * the cell at a particular row and column. r, c in [0, 9).
   */
 function loadPuzzle(puzzle) {
   for (var r = 0; r < 9; r++) {
@@ -147,7 +148,7 @@ function getBlock($cell) {
   * @return $cell
   */
 function getCell(r, c) {
-  return $('#cell-'+ (r+1) + '-' + (c+1));
+  return $('#cell-'+ r + '-' + c);
 }
 
 
@@ -161,41 +162,85 @@ function getCell(r, c) {
 
   Functions:
   - clickedCell
+  - editCell
+
+  Helpers:
+  - update
 
 **************************/
 
-/** Delegate appropriate action upon cell-click
-  *
-  * Make the clicked cell the current cell.
-  * Lowlight its row, column, and block.
+/** Delegate appropriate action upon cell-click.
+  * Make the clicked cell the current cell. Update cells.
   */
 function clickedCell() {
-  var $cell = $(this);
-
-  if ($('.current-cell') !== $cell) {
-    $('.current-cell').removeClass('current-cell');
-  }
-  $('.lowlight').removeClass('lowlight');
-
-  $cell.addClass('current-cell');
-  highlightRow(getRow($cell));
-  highlightCol($cell.attr('col'));
-  highlightBlock(getBlock($cell));
-
+  moveCell($(this));
+  update();
 }
 
 
 /** Edit the value in a particular cell.
-  * If an editable cell is selected and the input is valid,
-  * insert the value of the input into the cell. Check if
-  * the board is valid.
+  * If an editable cell is selected and the input is valid, 
+  * insert the value of the input into the cell. Update.
   */
 function editCell(e) {
-  var val = String.fromCharCode(e.charCode);
+  var code = e.keyCode;
   var $cell = $('.current-cell');
-  if ($cell.hasClass('editable') && valueIsValid(val)) {
-    $cell.text(val);
+  var r = parseInt(getRow($cell));
+  var c = parseInt(getCol($cell));
+
+  if (code === 8) { // backspace
+    $cell.text('');
+  } else if (code == 37) { // left
+    c -= 1;
+    if (c < 0) {
+      c += 9;
+    }
+    moveCell(getCell(r,c));
+  } else if (code == 38) { // up
+    r -= 1;
+    if (r < 0) {
+      r += 9;
+    }
+    moveCell(getCell(r,c));
+  } else if (code == 39) { // right
+    c += 1;
+    c %= 9;
+    moveCell(getCell(r,c));
+  } else if (code == 40) { // down
+    r += 1;
+    r %= 9;
+    moveCell(getCell(r,c));
+  } else {
+    var val = String.fromCharCode(code);
+    if ($cell.hasClass('editable') && valueIsValid(val)) {
+      $cell.text(val);
+    }
   }
+  update();
+}
+
+
+/** Move current cell to a given cell.
+  * @param $cell - new current cell
+  */
+function moveCell($cell) {
+  if ($('.current-cell') !== $cell) {
+    $('.current-cell').removeClass('current-cell');
+  }
+  $cell.addClass('current-cell');
+}
+
+
+/** Update the current board
+  * - highlights
+  * - possible values
+  *
+  * Check if board is valid.
+  */
+function update() {
+  updateHighlights();
+  updatePossibleValues();
+
   boardIsValid();
 }
 
@@ -214,6 +259,8 @@ function editCell(e) {
   - colIsValid
   - blockIsValid
   - valueIsValid
+  - possibleValues
+  - updatePossibleValues
 
   Helpers:
   - valueInArray
@@ -225,78 +272,104 @@ function editCell(e) {
   * - check each row
   * - check each column
   * - check each block
-  * @return true if all checks pass, false otherwise.
   */
 function boardIsValid() {
   for (var i = 0; i < 9; i++) {
-    if (!rowIsValid(i)) {
-      return false;
-    } if (!colIsValid(i)) {
-      return false;
-    } if (!blockIsValid(i)) {
-      return false;
-    }
+    rowIsValid(i);
+    colIsValid(i);
+    blockIsValid(i);
   }
-  return true;
 }
 
 
 /** Given a particular row, check if it is valid
+  * If invalid, highlight row in red
   * @param r - row to check
-  * @return true if all checks pass, false otherwise.
+  * @return - array of values (true if in row, false otherwise)
   */
 function rowIsValid(r) {
   arr = falseArray();
   for (var c = 0; c < 9; c++) {
     if (valueInArray(getCell(r, c), arr)) {
       highlightRow(r, 'red');
-      return false;
     }
   }
-  return true;
+  return arr;
 }
 
 
 /** Given a particular column, check if it is valid
+  * If invalid, highlight column in red
   * @param c - column to check
-  * @return true if all checks pass, false otherwise.
+  * @return - array of values (true if in column, false otherwise)
   */
 function colIsValid(c) {
   arr = falseArray();
   for (var r = 0; r < 9; r++) {
     if (valueInArray(getCell(r, c), arr)) {
       highlightCol(c, 'red');
-      return false;
     }
   }
-  return true;
+  return arr;
 }
 
 
 /** Given a particular block, check if it is valid
+  * If invalid, highlight block in red
   * @param b - block to check
-  * @return true if all checks pass, false otherwise.
+  * @return - array of values (true if in block, false otherwise)
   */
 function blockIsValid(b) {
   arr = falseArray();
   var $block = $('#block-' + b);
-  $block.find('cell').each(function() {
+  $block.find('.cell').each(function() {
     if (valueInArray($(this), arr)) {
       highlightBlock(b, 'red');
-      return false;
     }
   });
-  return true;
+  return arr;
 }
 
 
 /** Given a particular value, check if it is valid
   * @param v - value to check
-  * @return true if value is in [1,9]
+  * @return true if value is in [1, 9]
   */
 function valueIsValid(v) {
   v = parseInt(v);
   return v > 0 && v < 10;
+}
+
+
+/** Generate array of possible values for a given cell.
+  * @param $cell - current cell
+  * @return array of valid values for this cell
+  */
+function possibleValues($cell) {
+  var rowValidVals = rowIsValid(getRow($cell));
+  var colValidVals = colIsValid(getCol($cell));
+  var blockValidVals = blockIsValid(getBlock($cell));
+  var values = [];
+  for (var i = 0; i < 9; i++) {
+    if (rowValidVals[i] || colValidVals[i] || blockValidVals[i]) {
+      continue;
+    }
+    values.push(i+1);
+  }
+  return values;
+}
+
+
+/** Update possible values for current cell if editable.
+  */
+function updatePossibleValues() {
+  var $cell = $('.current-cell');
+  var $possible = $('#possible-values .current');
+  if ($cell.hasClass('given')) {
+    $possible.text('Given value');
+  } else {
+    $possible.text(possibleValues($cell));
+  }
 }
 
 
@@ -312,6 +385,9 @@ function valueIsValid(v) {
   * @return true if our value is in the array, false otherwise.
   */
 function valueInArray($cell, arr) {
+  if ($cell.text() === '') {
+    return false;
+  }
   var cur = parseInt($cell.text()) - 1;
   if (!arr[cur]) {
     arr[cur] = true;
@@ -345,39 +421,40 @@ function falseArray() {
   - highlightRow
   - highlightCol
   - highlightBlock
+  - updateHighlights
 
   Helpers:
   - lowlight
   - highlight
+  - resetHighlights
 
 **************************/
 
 /** Highlight a particular row
   * @param r - row to highlight
   * @param color (optional) if there is a color, specify that here
-  * @return true if all checks pass, false otherwise.
   */
 function highlightRow(r, color) {
   for (var c = 0; c < 9; c++) {
-    lowlight(getCell(r-1, c), color);
+    lowlight(getCell(r, c), color);
   }
 }
+
 
 /** Highlight a particular column
   * @param c - column to highlight
   * @param color (optional) if there is a color, specify that here
-  * @return true if all checks pass, false otherwise.
   */
 function highlightCol(c, color) {
   for (var r = 0; r < 9; r++) {
-    lowlight(getCell(r, c-1), color);
+    lowlight(getCell(r, c), color);
   }
 }
+
 
 /** Highlight a particular block
   * @param b - block to highlight
   * @param color (optional) if there is a color, specify that here
-  * @return true if all checks pass, false otherwise.
   */
 function highlightBlock(b, color) {
   var $block = $('#block-' + b);
@@ -386,15 +463,68 @@ function highlightBlock(b, color) {
   });
 }
 
+
+/** Highlight a particular number
+  * @param n - number to highlight
+  * @param color (optional) if there is a color, specify that here
+  */
+function highlightNumber(n, color) {
+  for (var c = 0; c < 9; c++) {
+    for (var r = 0; r < 9; r++) {
+      $cell = getCell(r, c);
+
+       // if cell is not current cell and matches our number
+      if ($cell !== $('.current-cell') && $cell.text() === n) {
+        lowlight($cell, color);
+        continue;
+      }
+    }
+  }
+}
+
+
 /** Lowlight a cell
   * @param $cell - block to lowlight
   * @param color (optional) if there is a color, specify that here
   */
 function lowlight($cell, color) {
-  $cell.addClass('lowlight');
   if (color) {
     $cell.addClass(color);
+  } else {
+    $cell.addClass('lowlight');
   }
+}
+
+
+/** Update highlights for current cell
+  * - highlight current row
+  * - highlight current column
+  * - highlight current block
+  * - highlight current number
+  */
+function updateHighlights() {
+  resetHighlights();
+  $cell = $('.current-cell');
+  if ($cell) {
+    highlightRow(getRow($cell));
+    highlightCol($cell.attr('col'));
+    highlightBlock(getBlock($cell));
+    if ($cell.text() !== '') {
+      highlightNumber($cell.text(), 'green');
+    }
+  }
+}
+
+
+/** Remove all highlights
+  * - lowlights
+  * - greens
+  * - reds
+  */
+function resetHighlights() {
+  $('.lowlight').removeClass('lowlight');
+  $('.green').removeClass('green');
+  $('.red').removeClass('red');
 }
 
 
@@ -404,7 +534,8 @@ function lowlight($cell, color) {
   TEST VALUES
 **************************/
 
-/* Hard-coded puzzles for testing */
+/** Hard-coded puzzles for testing
+  */
 
 testPuzzleEasy = [
   [5,9,0,  0,0,2,  0,7,0], // 1-1, 1-2, 1-3, 1-4, 1-5, 1-6, 1-7, 1-8, 1-9
