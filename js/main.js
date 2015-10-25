@@ -575,7 +575,7 @@ function highlightNumber(n, color) {
         lowlight($c, color);
         continue;
       } else if ( pencilText($c).indexOf(n) > -1 ) {
-        lowlight($c, color);
+        lowlight($c, color+" border");
         continue;
       }
     }
@@ -624,6 +624,7 @@ function updateHighlights() {
 function resetHighlights() {
   $('.lowlight').removeClass('lowlight');
   $('.green').removeClass('green');
+  $('.border').removeClass('border');
   $('.red').removeClass('red');
 }
 
