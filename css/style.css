@@ -31,6 +31,22 @@
 	cursor: pointer;
 }
 
+.cell .pencil {
+    display: block;
+    color: #888;
+    font-size: .5em;
+    line-height: 1em;
+}
+
+.cell .pencil span {
+	margin: 0 1px;
+	display: inline-block;
+}
+
+.cell.current-cell .pencil {
+    color: #ccc;
+}
+
 .cell.given {
 	font-weight: bold;
 	color: #333;
@@ -46,12 +62,32 @@
 	-webkit-transition: all .05s linear;
 }
 
+.cell.red {
+	background: #ea5c5a;
+	-webkit-transition: all .05s linear;
+}
+
+.cell.unsure {
+	background: #faebcc;
+	-webkit-transition: all .05s linear;
+}
+
 .cell.current-cell {
 	background: #5ea6e4;
 	-webkit-transition: all .05s linear;
 }
 
-.cell.red {
-	background: #ea5c5a;
-	-webkit-transition: all .05s linear;
+.button {
+	color: #888;
+}
+
+.button:hover {
+	text-decoration: none;
+	cursor: pointer;
+	color: #888;
+}
+
+.button.active,
+.button.active:hover {
+	color: #5ea6e4;
 }

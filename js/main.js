@@ -19,6 +19,7 @@ $( function() {
 
   $('.cell').click(clickedCell);
   $(document).on("keydown", editCell);
+  $('#toggle-pencil').click(togglePencil);
 });
 
 
@@ -82,7 +83,9 @@ function initBoard() {
       blockHTML += '<div id="cell-' + r + '-' + c + '"';
       blockHTML += ' class="cell" row="' + r + '"';
       blockHTML += ' col="' + c + '"';
-      blockHTML += ' block="' + b +'"></div>';
+      blockHTML += ' block="' + b +'">';
+      blockHTML += '<div class="pencil"></div>';
+      blockHTML += '</div>';
     }
 
     blockHTML += '</div>';
@@ -163,6 +166,7 @@ function getCell(r, c) {
   Functions:
   - clickedCell
   - editCell
+  - togglePencil
 
   Helpers:
   - update
@@ -175,48 +179,93 @@ function getCell(r, c) {
 function clickedCell() {
   moveCell($(this));
   update();
+  boardIsValid();
 }
 
 
-/** Edit the value in a particular cell.
-  * If an editable cell is selected and the input is valid, 
-  * insert the value of the input into the cell. Update.
+/** Keypress reactions
+  * - Edit the value, if a cell is selected.
+  * - Backspace deletes value, if a cell is selected
+  * - Arrow keys for navigation
+  * - If pencil mode, handle accordingly
   */
 function editCell(e) {
   var code = e.keyCode;
+  var val = String.fromCharCode(code);
+
   var $cell = $('.current-cell');
   var r = parseInt(getRow($cell));
   var c = parseInt(getCol($cell));
 
   if (code === 8) { // backspace
-    $cell.text('');
-  } else if (code == 37) { // left
+    e.preventDefault();
+    $cell.html('<div class="pencil"></div>');
+  }  else if (code == 80) { // "p": toggle-pencil
+    togglePencil();
+  } else if (code === 37) { // left
     c -= 1;
     if (c < 0) {
       c += 9;
     }
     moveCell(getCell(r,c));
-  } else if (code == 38) { // up
+  } else if (code === 38) { // up
     r -= 1;
     if (r < 0) {
       r += 9;
     }
     moveCell(getCell(r,c));
-  } else if (code == 39) { // right
+  } else if (code === 39) { // right
     c += 1;
     c %= 9;
     moveCell(getCell(r,c));
-  } else if (code == 40) { // down
+  } else if (code === 40) { // down
     r += 1;
     r %= 9;
     moveCell(getCell(r,c));
-  } else {
-    var val = String.fromCharCode(code);
-    if ($cell.hasClass('editable') && valueIsValid(val)) {
+  }
+
+  // if editable and value is valid
+  else if ($cell.hasClass('editable') && valueIsValid(val)) {
+  
+    // pencil mode
+    if ($('#board').hasClass('pencil-mode-active')) {
+      var $pencil = $cell.find('.pencil');
+      var removed = false;
+      $pencil.find('span').each(function() {
+        $t = $(this);
+        if ($t.text() === val) {
+          $(this).detach();
+          removed = true;
+        }
+      });
+      if (!removed) {
+        $pencil.append('<span>' + val + '</span>');
+      }
+    }
+  
+    // non-pencil mode
+    else {
       $cell.text(val);
+      boardIsValid();
     }
   }
+
+  // update board
   update();
+}
+
+
+/** Toggle editing state between pencil and regular
+  */
+function togglePencil() {
+  $('#board').toggleClass('pencil-mode-active');
+  var $button = $('#toggle-pencil');
+  $button.toggleClass('active');
+  if ($button.hasClass('active')) {
+    $button.find('.current').text('On');
+  } else {
+    $button.find('.current').text('Off');
+  }
 }
 
 
@@ -234,14 +283,10 @@ function moveCell($cell) {
 /** Update the current board
   * - highlights
   * - possible values
-  *
-  * Check if board is valid.
   */
 function update() {
   updateHighlights();
   updatePossibleValues();
-
-  boardIsValid();
 }
 
 
@@ -365,7 +410,9 @@ function possibleValues($cell) {
 function updatePossibleValues() {
   var $cell = $('.current-cell');
   var $possible = $('#possible-values .current');
-  if ($cell.hasClass('given')) {
+  if ($cell[0] === undefined) {
+    $possible.text('No square selected.');
+  } else if ($cell.hasClass('given')) {
     $possible.text('Given value');
   } else {
     $possible.text(possibleValues($cell));
@@ -385,11 +432,21 @@ function updatePossibleValues() {
   * @return true if our value is in the array, false otherwise.
   */
 function valueInArray($cell, arr) {
-  if ($cell.text() === '') {
+
+  var text = $cell.text();
+
+  // remove all pencil values from consideration
+  $cell.find('span').each(function() {
+    text = text.replace($(this).text(),'');
+  });
+  
+  // if square is empty, ignore
+  if (text === '') {
     return false;
   }
-  var cur = parseInt($cell.text()) - 1;
-  if (!arr[cur]) {
+
+  var cur = parseInt(text) - 1;
+  if (!arr[cur]) { // not yet in array
     arr[cur] = true;
     return false;
   }
