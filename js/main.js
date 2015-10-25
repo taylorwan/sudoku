@@ -107,11 +107,11 @@ function loadPuzzle(puzzle) {
   for (var r = 0; r < 9; r++) {
     for (var c = 0; c < 9; c++) {
       var cur = puzzle[r][c];
-      var $cell = getCell(r, c);
+      var $c = getCell(r, c);
       if (cur !== 0) {
-        $cell.text(cur).addClass('given');
+        $c.text(cur).addClass('given');
       } else {
-        $cell.addClass('editable');
+        $c.addClass('editable');
       }
     }
   }
@@ -119,36 +119,36 @@ function loadPuzzle(puzzle) {
 
 
 /** Get the row # for a given cell
-  * @param $cell - the cell
+  * @param $c - the cell
   * @return row - the row of this cell
   */
-function getRow($cell) {
-  return $cell.attr('row');
+function getRow($c) {
+  return $c.attr('row');
 }
 
 
 /** Get the col # for a given cell
-  * @param $cell - the cell
+  * @param $c - the cell
   * @return col - the col of this cell
   */
-function getCol($cell) {
-  return $cell.attr('col');
+function getCol($c) {
+  return $c.attr('col');
 }
 
 
 /** Get the block # for a given cell
-  * @param $cell - the cell
+  * @param $c - the cell
   * @return block - the block of this cell
   */
-function getBlock($cell) {
-  return $cell.attr('block');
+function getBlock($c) {
+  return $c.attr('block');
 }
 
 
 /** Get the cell element given its row and column
   * @param r - the cell's row
   * @param c - the cell's column
-  * @return $cell
+  * @return $c
   */
 function getCell(r, c) {
   return $('#cell-'+ r + '-' + c);
@@ -193,13 +193,13 @@ function editCell(e) {
   var code = e.keyCode;
   var val = String.fromCharCode(code);
 
-  var $cell = $('.current-cell');
-  var r = parseInt(getRow($cell));
-  var c = parseInt(getCol($cell));
+  var $c = $('.current-cell');
+  var r = parseInt(getRow($c));
+  var c = parseInt(getCol($c));
 
   if (code === 8) { // backspace
     e.preventDefault();
-    $cell.html('<div class="pencil"></div>');
+    $c.html('<div class="pencil"></div>');
   }  else if (code == 80) { // "p": toggle-pencil
     togglePencil();
   } else if (code === 37) { // left
@@ -225,11 +225,11 @@ function editCell(e) {
   }
 
   // if editable and value is valid
-  else if ($cell.hasClass('editable') && valueIsValid(val)) {
+  else if ($c.hasClass('editable') && valueIsValid(val)) {
   
     // pencil mode
     if ($('#board').hasClass('pencil-mode-active')) {
-      var $pencil = $cell.find('.pencil');
+      var $pencil = $c.find('.pencil');
       var removed = false;
       $pencil.find('span').each(function() {
         $t = $(this);
@@ -245,7 +245,7 @@ function editCell(e) {
   
     // non-pencil mode
     else {
-      $cell.text(val);
+      $c.text(val);
       boardIsValid();
     }
   }
@@ -270,13 +270,13 @@ function togglePencil() {
 
 
 /** Move current cell to a given cell.
-  * @param $cell - new current cell
+  * @param $c - new current cell
   */
-function moveCell($cell) {
-  if ($('.current-cell') !== $cell) {
+function moveCell($c) {
+  if ($('.current-cell') !== $c) {
     $('.current-cell').removeClass('current-cell');
   }
-  $cell.addClass('current-cell');
+  $c.addClass('current-cell');
 }
 
 
@@ -312,6 +312,7 @@ function update() {
   - falseArray
   - cellText
   - pencilText
+  - pencilTextArr
 
 **************************/
 
@@ -389,13 +390,13 @@ function valueIsValid(v) {
 
 
 /** Generate array of possible values for a given cell.
-  * @param $cell - current cell
+  * @param $c - current cell
   * @return array of valid values for this cell
   */
-function possibleValues($cell) {
-  var rowValidVals = rowIsValid(getRow($cell));
-  var colValidVals = colIsValid(getCol($cell));
-  var blockValidVals = blockIsValid(getBlock($cell));
+function possibleValues($c) {
+  var rowValidVals = rowIsValid(getRow($c));
+  var colValidVals = colIsValid(getCol($c));
+  var blockValidVals = blockIsValid(getBlock($c));
   var values = [];
   for (var i = 0; i < 9; i++) {
     if (rowValidVals[i] || colValidVals[i] || blockValidVals[i]) {
@@ -410,14 +411,14 @@ function possibleValues($cell) {
 /** Update possible values for current cell if editable.
   */
 function updatePossibleValues() {
-  var $cell = $('.current-cell');
+  var $c = $('.current-cell');
   var $possible = $('#possible-values .current');
-  if ($cell[0] === undefined) {
+  if ($c[0] === undefined) {
     $possible.text('No square selected.');
-  } else if ($cell.hasClass('given')) {
+  } else if ($c.hasClass('given')) {
     $possible.text('Given value');
   } else {
-    $possible.text(possibleValues($cell));
+    $possible.text(possibleValues($c));
   }
 }
 
@@ -433,12 +434,12 @@ function updatePossibleValues() {
   * @param arr - array
   * @return true if our value is in the array, false otherwise.
   */
-function valueInArray($cell, arr) {
+function valueInArray($c, arr) {
 
-  var text = $cell.text();
+  var text = $c.text();
 
   // remove all pencil values from consideration
-  $cell.find('span').each(function() {
+  $c.find('span').each(function() {
     text = text.replace($(this).text(),'');
   });
   
@@ -483,9 +484,18 @@ function cellText($c) {
 
 /** Grab only the pencil's value from a given cell
   * @param $c - the given cell
-  * @return an array of pencil values
+  * @return a string of the cell's pencil values
   */
 function pencilText($c) {
+  return $c.find('.pencil').text();
+}
+
+
+/** Grab only the pencil's value from a given cell
+  * @param $c - the given cell
+  * @return an array of pencil values
+  */
+function pencilTextArr($c) {
   arr = [];
   $c.find('span').each(function() {
     arr.push($(this).text());
@@ -556,11 +566,14 @@ function highlightBlock(b, color) {
 function highlightNumber(n, color) {
   for (var c = 0; c < 9; c++) {
     for (var r = 0; r < 9; r++) {
-      $cell = getCell(r, c);
+      $c = getCell(r, c);
 
-       // if cell is not current cell and matches our number
-      if ($cell !== $('.current-cell') && $cell.text() === n) {
-        lowlight($cell, color);
+       // if cell is not current cell and any value matches n
+      if ($c !== $('.current-cell') && cellText($c) === n) {
+        lowlight($c, color);
+        continue;
+      } else if ( pencilText($c).indexOf(n) > -1 ) {
+        lowlight($c, color);
         continue;
       }
     }
@@ -569,14 +582,14 @@ function highlightNumber(n, color) {
 
 
 /** Lowlight a cell
-  * @param $cell - block to lowlight
+  * @param $c - block to lowlight
   * @param color (optional) if there is a color, specify that here
   */
-function lowlight($cell, color) {
+function lowlight($c, color) {
   if (color) {
-    $cell.addClass(color);
+    $c.addClass(color);
   } else {
-    $cell.addClass('lowlight');
+    $c.addClass('lowlight');
   }
 }
 
@@ -589,13 +602,13 @@ function lowlight($cell, color) {
   */
 function updateHighlights() {
   resetHighlights();
-  $cell = $('.current-cell');
-  if ($cell) {
-    highlightRow(getRow($cell));
-    highlightCol($cell.attr('col'));
-    highlightBlock(getBlock($cell));
-    if ($cell.text() !== '') {
-      highlightNumber($cell.text(), 'green');
+  $c = $('.current-cell');
+  if ($c) {
+    highlightRow(getRow($c));
+    highlightCol($c.attr('col'));
+    highlightBlock(getBlock($c));
+    if (cellText($c) !== '') {
+      highlightNumber(cellText($c), 'green');
     }
   }
 }
