@@ -7,13 +7,13 @@
 .board {
 	display: inline-block;
 	width: 368px;
-	border: 1px solid #555;
+	border: 1px solid #333;
 }
 
 .block {
 	width: 122px;
 	float: left;
-	border: 1px solid #555;
+	border: 1px solid #333;
 }
 
 .cell {
@@ -21,9 +21,14 @@
 	width: 40px;
 	padding: 4px;
 	float: left;
-	border: 1px solid #555;
+	border: 1px solid #333;
 	font-size: 20px;
-	color: #000;
+	color: #444;
+	-webkit-transition: all .1s linear;
+}
+
+.cell:hover {
+	cursor: pointer;
 }
 
 .answer {
@@ -35,5 +40,20 @@
 
 .given {
 	font-weight: bold;
-	color: #555;
+	color: #333;
+}
+
+.lowlight {
+	background: #bce8f1;
+	-webkit-transition: all .05s linear;
+}
+
+.lowlight.red {
+	background: #ea5c5a;
+	-webkit-transition: all .05s linear;
+}
+
+.current-cell {
+	background: #5ea6e4;
+	-webkit-transition: all .05s linear;
 }
