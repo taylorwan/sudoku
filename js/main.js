@@ -310,6 +310,8 @@ function update() {
   Helpers:
   - valueInArray
   - falseArray
+  - cellText
+  - pencilText
 
 **************************/
 
@@ -433,13 +435,8 @@ function updatePossibleValues() {
   */
 function valueInArray($cell, arr) {
 
-  var text = $cell.text();
+  var text = cellText($cell);
 
-  // remove all pencil values from consideration
-  $cell.find('span').each(function() {
-    text = text.replace($(this).text(),'');
-  });
-  
   // if square is empty, ignore
   if (text === '') {
     return false;
@@ -463,6 +460,32 @@ function falseArray() {
     fArr[i] = false;
   }
   return fArr;
+}
+
+
+/** Grab only the cell's value from a given cell
+  * @param $c - the given cell
+  */
+function cellText($c) {
+  var val = $c.text();
+  var pencilVals = pencilText($c);
+  for (var p in pencilVals) {
+    val = val.replace(pencilVals[p], '');
+  }
+  return val;
+}
+
+
+/** Grab only the pencil's value from a given cell
+  * @param $c - the given cell
+  * @return an array of pencil values
+  */
+function pencilText($c) {
+  arr = [];
+  $c.find('span').each(function() {
+    arr.push($(this).text());
+  });
+  return arr;
 }
 
 
