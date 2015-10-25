@@ -435,8 +435,13 @@ function updatePossibleValues() {
   */
 function valueInArray($cell, arr) {
 
-  var text = cellText($cell);
+  var text = $cell.text();
 
+  // remove all pencil values from consideration
+  $cell.find('span').each(function() {
+    text = text.replace($(this).text(),'');
+  });
+  
   // if square is empty, ignore
   if (text === '') {
     return false;
