@@ -20,6 +20,7 @@ $( function() {
   $('.cell').click(clickedCell);
   $(document).on("keydown", editCell);
   $('#toggle-pencil').click(togglePencil);
+  $('#new-game').click(newGame);
 });
 
 
@@ -27,7 +28,7 @@ $( function() {
   */
 function main() {
   initBoard();
-  loadPuzzle(testPuzzleHard);
+  loadPuzzle(testPuzzleAlmostComplete);
 }
 
 
@@ -42,6 +43,7 @@ function main() {
   Functions:
   - initBoard
   - loadPuzzle
+  - newGame
 
   Helpers:
   - getRow
@@ -111,10 +113,32 @@ function loadPuzzle(puzzle) {
       if (cur !== 0) {
         $c.text(cur).addClass('given');
       } else {
+        $c.text('');
         $c.addClass('editable');
       }
     }
   }
+}
+
+
+/** Load in a new game
+  * Pick a new game at random, and load it
+  */
+function newGame() {
+  console.log("running newgame");
+  var num = parseInt(Math.random() * 3);
+  if (num === 0) {
+    loadPuzzle(testPuzzleEasy);
+  }
+  else if (num === 0) {
+    loadPuzzle(testPuzzleMedium);
+  }
+  else {
+    loadPuzzle(testPuzzleHard);
+  }
+  $('#board').removeClass('complete');
+  $('#new-game').addClass('hide');
+  $('#board-complete').html("Sudoku. Let's do this.");
 }
 
 
@@ -167,6 +191,7 @@ function getCell(r, c) {
   - clickedCell
   - editCell
   - togglePencil
+  - gameOver
 
   Helpers:
   - update
@@ -252,6 +277,9 @@ function editCell(e) {
 
   // update board
   update();
+
+  // check if the game is complete
+  gameOver();
 }
 
 
@@ -292,6 +320,23 @@ function update() {
 }
 
 
+/** Determine if the game is over
+  * - check if board is valid
+  * - check if board is complete
+  * - update messaging
+  */
+function gameOver() {
+  var $msgHolder = $('#board-complete');
+  if (boardIsComplete() && boardIsValid()) {
+    $('#board').addClass('complete');
+    $msgHolder.html("Congrats! You've completed the puzzle.");
+    $('#new-game').removeClass('hide');
+    return true;
+  }
+  return false;
+}
+
+
 
 
 /**************************
@@ -301,6 +346,8 @@ function update() {
   ************************
 
   Functions:
+  - boardIsComplete
+  - rowIsComplete
   - boardIsValid
   - rowIsValid
   - colIsValid
@@ -318,6 +365,40 @@ function update() {
 
 **************************/
 
+/** Check if current board is complete
+  * - check if complete
+  * - check if valid
+  */
+function boardIsComplete() {
+  console.log("running board is complete");
+  for (var i = 0; i < 9; i++) {
+    if (!rowIsComplete(i)) {
+      console.log("board is not complete");
+      return false;
+    }
+  }
+  console.log("board is complete");
+  return true;
+}
+
+
+/** Check if current board is valid and complete
+  * - check if row is complete
+  */
+function rowIsComplete(r) {
+  var values = [];
+  $('.cell[row=' + r + ']').each(function() {
+    values.push($(this).text());
+  });
+  for (var i = 0; i < 9; i++) {
+    if (values[i] === '') {
+      return false;
+    }
+  }
+  return true;
+}
+
+
 /** Check if current board is valid
   * - check each row
   * - check each column
@@ -325,10 +406,13 @@ function update() {
   */
 function boardIsValid() {
   for (var i = 0; i < 9; i++) {
-    rowIsValid(i);
-    colIsValid(i);
-    blockIsValid(i);
+    if ( !rowIsValid(i) || !colIsValid(i) || ! blockIsValid(i)) {
+      console.log("board is not valid");
+      return false;
+    }
   }
+  console.log("board is valid");
+  return true;
 }
 
 
@@ -342,6 +426,7 @@ function rowIsValid(r) {
   for (var c = 0; c < 9; c++) {
     if (valueInArray(getCell(r, c), arr)) {
       highlightRow(r, 'red');
+      return false;
     }
   }
   return arr;
@@ -358,6 +443,7 @@ function colIsValid(c) {
   for (var r = 0; r < 9; r++) {
     if (valueInArray(getCell(r, c), arr)) {
       highlightCol(c, 'red');
+      return false;
     }
   }
   return arr;
@@ -375,6 +461,7 @@ function blockIsValid(b) {
   $block.find('.cell').each(function() {
     if (valueInArray($(this), arr)) {
       highlightBlock(b, 'red');
+      return false;
     }
   });
   return arr;
@@ -599,7 +686,7 @@ function lowlight($c, color) {
 /** Update highlights for current cell
   * - highlight current row
   * - highlight current column
-  * - highlight current block
+  * // - highlight current block
   * - highlight current number
   */
 function updateHighlights() {
@@ -608,7 +695,7 @@ function updateHighlights() {
   if ($c) {
     highlightRow(getRow($c));
     highlightCol($c.attr('col'));
-    highlightBlock(getBlock($c));
+    // highlightBlock(getBlock($c));
     if (cellText($c) !== '') {
       highlightNumber(cellText($c), 'green');
     }
@@ -650,6 +737,20 @@ testPuzzleEasy = [
   [0,0,2,  4,0,0,  3,0,0], // 7-1, 7-2, 7-3, 7-4, 7-5, 7-6, 7-7, 7-8, 7-9
   [0,0,8,  6,3,0,  0,9,2], // 8-1, 8-2, 8-3, 8-4, 8-5, 8-6, 8-7, 8-8, 8-9
   [0,3,0,  9,0,0,  0,6,5]  // 9-1, 9-2, 9-3, 9-4, 9-5, 9-6, 9-7, 9-8, 9-9
+];
+
+testPuzzleAlmostComplete = [
+  [5,9,3,  8,4,2,  1,7,6], // 1-1, 1-2, 1-3, 1-4, 1-5, 1-6, 1-7, 1-8, 1-9
+  [8,4,7,  1,6,5,  9,2,3], // 2-1, 2-2, 2-3, 2-4, 2-5, 2-6, 2-7, 2-8, 2-9
+  [6,2,1,  7,9,3,  8,5,4], // 3-1, 3-2, 3-3, 3-4, 3-5, 3-6, 3-7, 3-8, 3-9
+  
+  [3,1,5,  2,8,9,  6,4,7], // 4-1, 4-2, 4-3, 4-4, 4-5, 4-6, 4-7, 4-8, 4-9
+  [4,7,9,  5,1,6,  2,3,8], // 5-1, 5-2, 5-3, 5-4, 5-5, 5-6, 5-7, 5-8, 5-9
+  [2,8,6,  3,7,4,  5,1,9], // 6-1, 6-2, 6-3, 6-4, 6-5, 6-6, 6-7, 6-8, 6-9
+  
+  [9,6,2,  4,5,7,  3,8,0], // 7-1, 7-2, 7-3, 7-4, 7-5, 7-6, 7-7, 7-8, 7-9
+  [7,5,8,  6,3,1,  4,9,2], // 8-1, 8-2, 8-3, 8-4, 8-5, 8-6, 8-7, 8-8, 8-9
+  [1,3,4,  9,2,8,  7,6,5]  // 9-1, 9-2, 9-3, 9-4, 9-5, 9-6, 9-7, 9-8, 9-9
 ];
 
 testPuzzleMedium = [

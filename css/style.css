@@ -5,9 +5,22 @@
 }
 
 .board {
+	position: relative;
 	display: inline-block;
 	width: 368px;
 	border: 1px solid #333;
+}
+
+.board.complete:after {
+    content: "Congrats! You've completed the puzzle";
+    position: absolute;
+    background: rgba(255,255,255,.9);
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 30% 2em;
+    font-size: 2em;
 }
 
 .block {
@@ -97,4 +110,15 @@
 .button.active,
 .button.active:hover {
 	color: #5ea6e4;
+}
+
+.new-game {
+	margin-top: 1em;
+	background: #5ea6e4;
+	color: #fff;
+}
+
+.new-game:hover {
+	opacity: 0.9;
+	color: #fff;
 }
