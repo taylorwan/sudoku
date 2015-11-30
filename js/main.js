@@ -10,6 +10,8 @@
 
 **************************/
 
+var gameCount = 0;
+
 /** Upon document ready
   * - call main
   * - initialize listeners
@@ -28,7 +30,7 @@ $( function() {
   */
 function main() {
   initBoard();
-  loadPuzzle(testPuzzleAlmostComplete);
+  loadPuzzle(testPuzzleEasy);
 }
 
 
@@ -125,12 +127,12 @@ function loadPuzzle(puzzle) {
   * Pick a new game at random, and load it
   */
 function newGame() {
-  console.log("running newgame");
-  var num = parseInt(Math.random() * 3);
+  gameCount++;
+  var num = gameCount % 3;
   if (num === 0) {
     loadPuzzle(testPuzzleEasy);
   }
-  else if (num === 0) {
+  else if (num === 1) {
     loadPuzzle(testPuzzleMedium);
   }
   else {
@@ -370,14 +372,11 @@ function gameOver() {
   * - check if valid
   */
 function boardIsComplete() {
-  console.log("running board is complete");
   for (var i = 0; i < 9; i++) {
     if (!rowIsComplete(i)) {
-      console.log("board is not complete");
       return false;
     }
   }
-  console.log("board is complete");
   return true;
 }
 
@@ -407,11 +406,9 @@ function rowIsComplete(r) {
 function boardIsValid() {
   for (var i = 0; i < 9; i++) {
     if ( !rowIsValid(i) || !colIsValid(i) || ! blockIsValid(i)) {
-      console.log("board is not valid");
       return false;
     }
   }
-  console.log("board is valid");
   return true;
 }
 
